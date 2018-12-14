@@ -9,9 +9,6 @@ class MainTest {
     fun initialize() {
         runBlocking {
             val client = Main(Main.createFirestore())
-            val experiment = client.getExperiment("ruben")
-
-            println(experiment)
 
             delay(60 * 1000)
         }
