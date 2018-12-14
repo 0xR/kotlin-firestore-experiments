@@ -8,7 +8,7 @@ class MainTest {
     @Test
     fun initialize() {
         runBlocking {
-            val client = Main()
+            val client = Main(Main.createFirestore())
             val experiment = client.getExperiment("ruben")
 
             println(experiment)

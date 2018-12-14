@@ -2,6 +2,7 @@ package com.xebia.demo
 
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.Timestamp
+import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.FirestoreOptions
 import com.google.cloud.firestore.ListenerRegistration
 import com.google.cloud.firestore.Query
@@ -12,21 +13,17 @@ import java.io.FileInputStream
 
 data class Experiment(val id: String = "", val name: String = "", val createdAt: Timestamp = Timestamp.now())
 
-class Main {
+class Main(val store: Firestore) {
     private var state: List<Experiment> = emptyList()
     private var listener: ListenerRegistration? = null
 
     init {
-        FirebaseApp.initializeApp(firebaseOptions())
-
         listener = listenForNewExperiments()
     }
 
     fun getExperiment(name: String): Experiment? = state.find { it.name == name }
 
-    fun destroy() = listener?.remove()
-
-    private fun listenForNewExperiments() = client()
+    private fun listenForNewExperiments() = store
         .collection("experiments")
         .orderBy("createdAt", Query.Direction.DESCENDING)
         .addSnapshotListener { snapshot, error ->
@@ -43,17 +40,28 @@ class Main {
             }
         }
 
-    private fun client() = FirestoreClient.getFirestore()
+    companion object {
+        fun createFirestore(): Firestore {
+            FirebaseApp.initializeApp(
+                FirebaseOptions.builder()
+                    .setCredentials(
+                        GoogleCredentials.fromStream(
+                            FileInputStream("src/main/resources/service-account.json")
+                        )
+                    )
+                    .setProjectId("ruben-oostinga-speeltuin")
+                    .setFirestoreOptions(
+                        FirestoreOptions.newBuilder()
+                            .setTimestampsInSnapshotsEnabled(true)
+                            .build()
+                    )
+                    .build()
+            )
 
-    private fun firebaseOptions() = FirebaseOptions.builder()
-        .setCredentials(GoogleCredentials.fromStream(
-            FileInputStream("src/main/resources/service-account.json"))
-        )
-        .setProjectId("ruben-oostinga-speeltuin")
-        .setFirestoreOptions(firestoreOptions())
-        .build()
+            return FirestoreClient.getFirestore();
+        }
+    }
 
-    private fun firestoreOptions() = FirestoreOptions.newBuilder()
-        .setTimestampsInSnapshotsEnabled(true)
-        .build()
 }
+
+
