@@ -11,7 +11,7 @@ import com.google.firebase.cloud.FirestoreClient
 data class Experiment(val id : String = "", val name : String = "", val createdAt: Timestamp = Timestamp.now())
 
 class Main {
-    private val projectId = "playground-3f8a8"
+    private val projectId = "ruben-oostinga-speeltuin"
     private val serviceAccountResource = javaClass.getResourceAsStream("/service-account.json")
     private val collectionName = "experiments"
 
@@ -39,7 +39,6 @@ class Main {
                 // mutation of the global state of experiments
                 state = docs
 
-                println("Received doc $docs")
                 println("Docs in state $state")
             }
         }
